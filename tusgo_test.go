@@ -10,11 +10,9 @@ import (
 	"os"
 	"sync"
 	"time"
-
-	"github.com/alexozer/tusgo"
 )
 
-func UploadWithRetry(dst *tusgo.UploadStream, src *os.File) error {
+func UploadWithRetry(dst *UploadStream, src *os.File) error {
 	// Set stream and file pointer to be equal to the remote pointer
 	// (if we resume the upload that was interrupted earlier)
 	if _, err := dst.Sync(); err != nil {
@@ -27,7 +25,7 @@ func UploadWithRetry(dst *tusgo.UploadStream, src *os.File) error {
 	_, err := io.Copy(dst, src)
 	attempts := 10
 	for err != nil && attempts > 0 {
-		if _, ok := err.(net.Error); !ok && !errors.Is(err, tusgo.ErrChecksumMismatch) {
+		if _, ok := err.(net.Error); !ok && !errors.Is(err, ErrChecksumMismatch) {
 			return err // Permanent error, no luck
 		}
 		time.Sleep(5 * time.Second)
@@ -40,14 +38,14 @@ func UploadWithRetry(dst *tusgo.UploadStream, src *os.File) error {
 	return nil
 }
 
-func CreateUploadFromFile(file *os.File, cl *tusgo.Client, partial bool) *tusgo.Upload {
+func CreateUploadFromFile(file *os.File, cl *Client, partial bool) *Upload {
 	// Open a file to be transferred
 	finfo, err := file.Stat()
 	if err != nil {
 		panic(err)
 	}
 
-	u := tusgo.Upload{}
+	u := Upload{}
 	if _, err := cl.CreateUpload(&u, finfo.Size(), partial, nil); err != nil {
 		panic(err)
 	}
@@ -60,12 +58,12 @@ func ExampleClient_CreateUpload() {
 	if err != nil {
 		panic(err)
 	}
-	cl := tusgo.NewClient(http.DefaultClient, baseURL)
+	cl := NewClient(http.DefaultClient, baseURL)
 	if _, err = cl.UpdateCapabilities(); err != nil {
 		panic(err)
 	}
 
-	u := tusgo.Upload{}
+	u := Upload{}
 	// Create an upload with 2 MiB size
 	if _, err = cl.CreateUpload(&u, 1024*1024*2, false, nil); err != nil {
 		panic(err)
@@ -78,7 +76,7 @@ func ExampleClient_ConcatenateUploads_withCreation() {
 	if err != nil {
 		panic(err)
 	}
-	cl := tusgo.NewClient(http.DefaultClient, baseURL)
+	cl := NewClient(http.DefaultClient, baseURL)
 	if _, err = cl.UpdateCapabilities(); err != nil {
 		panic(err)
 	}
@@ -86,7 +84,7 @@ func ExampleClient_ConcatenateUploads_withCreation() {
 	wg := &sync.WaitGroup{}
 	fileNames := []string{"/tmp/file1.txt", "/tmp/file2.txt"}
 	// Assume that uploads were already been created
-	uploads := make([]*tusgo.Upload, 2)
+	uploads := make([]*Upload, 2)
 	wg.Add(len(fileNames))
 
 	// Transfer partial uploads in parallel
@@ -105,7 +103,7 @@ func ExampleClient_ConcatenateUploads_withCreation() {
 			fmt.Printf("Upload #%d: Location: %s", ind, uploads[ind].Location)
 
 			fmt.Printf("Upload #%d: transferring file %s to %s\n", ind, fn, uploads[ind].Location)
-			stream := tusgo.NewUploadStream(cl, uploads[ind])
+			stream := NewUploadStream(cl, uploads[ind])
 			if err = UploadWithRetry(stream, f); err != nil {
 				panic(err)
 			}
@@ -116,22 +114,22 @@ func ExampleClient_ConcatenateUploads_withCreation() {
 	fmt.Println("Uploading complete, starting concatenation...")
 
 	// Concatenate partial uploads into a final upload
-	final := tusgo.Upload{}
-	if _, err = cl.ConcatenateUploads(&final, []tusgo.Upload{*uploads[0], *uploads[1]}, nil); err != nil {
+	final := Upload{}
+	if _, err = cl.ConcatenateUploads(&final, []Upload{*uploads[0], *uploads[1]}, nil); err != nil {
 		panic(err)
 	}
 
 	fmt.Printf("Final upload location: %s\n", final.Location)
 
 	// Get file info
-	u := tusgo.Upload{RemoteOffset: tusgo.OffsetUnknown}
+	u := Upload{RemoteOffset: OffsetUnknown}
 	for {
 		if _, err = cl.GetUpload(&u, final.Location); err != nil {
 			panic(err)
 		}
 		// When concatenation still in progress the offset can be either OffsetUnknown or a value less than size
 		// depending on server implementation
-		if u.RemoteOffset != tusgo.OffsetUnknown && u.RemoteOffset == u.RemoteSize {
+		if u.RemoteOffset != OffsetUnknown && u.RemoteOffset == u.RemoteSize {
 			break
 		}
 		fmt.Println("Waiting concatenation to be finished")
@@ -146,7 +144,7 @@ func Example_creationAndTransfer() {
 	if err != nil {
 		panic(err)
 	}
-	cl := tusgo.NewClient(http.DefaultClient, baseURL)
+	cl := NewClient(http.DefaultClient, baseURL)
 	if _, err = cl.UpdateCapabilities(); err != nil {
 		panic(err)
 	}
@@ -158,7 +156,7 @@ func Example_creationAndTransfer() {
 	defer f.Close()
 	u := CreateUploadFromFile(f, cl, false)
 
-	stream := tusgo.NewUploadStream(cl, u)
+	stream := NewUploadStream(cl, u)
 	if err = UploadWithRetry(stream, f); err != nil {
 		panic(err)
 	}
@@ -170,13 +168,13 @@ func Example_creationAndTransferWithDeferredSize() {
 	if err != nil {
 		panic(err)
 	}
-	cl := tusgo.NewClient(http.DefaultClient, baseURL)
+	cl := NewClient(http.DefaultClient, baseURL)
 	if _, err = cl.UpdateCapabilities(); err != nil {
 		panic(err)
 	}
 
-	u := tusgo.Upload{}
-	if _, err = cl.CreateUpload(&u, tusgo.SizeUnknown, false, nil); err != nil {
+	u := Upload{}
+	if _, err = cl.CreateUpload(&u, SizeUnknown, false, nil); err != nil {
 		panic(err)
 	}
 	fmt.Printf("Location: %s\n", u.Location)
@@ -193,7 +191,7 @@ func Example_creationAndTransferWithDeferredSize() {
 	}
 	u.RemoteSize = finfo.Size() // Set size after the upload has been created on server
 
-	stream := tusgo.NewUploadStream(cl, &u)
+	stream := NewUploadStream(cl, &u)
 	stream.SetUploadSize = true
 	if err = UploadWithRetry(stream, f); err != nil {
 		panic(err)
@@ -206,7 +204,7 @@ func Example_checksum() {
 	if err != nil {
 		panic(err)
 	}
-	cl := tusgo.NewClient(http.DefaultClient, baseURL)
+	cl := NewClient(http.DefaultClient, baseURL)
 	if _, err = cl.UpdateCapabilities(); err != nil {
 		panic(err)
 	}
@@ -221,10 +219,10 @@ func Example_checksum() {
 	if err != nil {
 		panic(err)
 	}
-	u := tusgo.Upload{Location: "http://example.com/files/foo/bar", RemoteSize: finfo.Size()}
+	u := Upload{Location: "http://example.com/files/foo/bar", RemoteSize: finfo.Size()}
 
 	// We want to use sha1
-	stream := tusgo.NewUploadStream(cl, &u).WithChecksumAlgorithm("sha1")
+	stream := NewUploadStream(cl, &u).WithChecksumAlgorithm("sha1")
 	if err = UploadWithRetry(stream, f); err != nil {
 		panic(err)
 	}
@@ -236,7 +234,7 @@ func Example_transferWithProgressWatch() {
 	if err != nil {
 		panic(err)
 	}
-	cl := tusgo.NewClient(http.DefaultClient, baseURL)
+	cl := NewClient(http.DefaultClient, baseURL)
 	if _, err = cl.UpdateCapabilities(); err != nil {
 		panic(err)
 	}
@@ -260,7 +258,7 @@ func Example_transferWithProgressWatch() {
 		}
 	}()
 
-	stream := tusgo.NewUploadStream(cl, u)
+	stream := NewUploadStream(cl, u)
 	if err = UploadWithRetry(stream, f); err != nil {
 		panic(err)
 	}
