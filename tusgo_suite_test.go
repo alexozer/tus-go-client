@@ -1,4 +1,4 @@
-package tusgo_test
+package tusgo
 
 import (
 	"testing"

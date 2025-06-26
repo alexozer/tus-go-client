@@ -1,14 +1,14 @@
 # tusgo
 
 [![codecov](https://codecov.io/gh/bdragon300/tusgo/branch/master/graph/badge.svg?token=ZLI69A7FHO)](https://codecov.io/gh/bdragon300/tusgo)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bdragon300/tusgo)](https://goreportcard.com/report/github.com/bdragon300/tusgo)
+[![Go Report Card](https://goreportcard.com/badge/github.com/alexozer/tusgo)](https://goreportcard.com/report/github.com/alexozer/tusgo)
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/bdragon300/tusgo/run-tests.yml?branch=master)
-[![Go reference](https://pkg.go.dev/badge/github.com/bdragon300/tusgo)](https://pkg.go.dev/github.com/bdragon300/tusgo)
+[![Go reference](https://pkg.go.dev/badge/github.com/alexozer/tusgo)](https://pkg.go.dev/github.com/alexozer/tusgo)
 ![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/bdragon300/tusgo)
 
 Full-featured Go client for [TUS](https://tus.io), a protocol for resumable uploads built on HTTP.
 
-Documentation is available at [pkg.go.dev](https://pkg.go.dev/github.com/bdragon300/tusgo)
+Documentation is available at [pkg.go.dev](https://pkg.go.dev/github.com/alexozer/tusgo)
 
 ## Features
 
@@ -32,7 +32,7 @@ Documentation is available at [pkg.go.dev](https://pkg.go.dev/github.com/bdragon
 ## Installation
 
 ```shell
-go get github.com/bdragon300/tusgo
+go get github.com/alexozer/tusgo
 ```
 
 Go v1.18 or newer is required
@@ -51,7 +51,7 @@ import (
 	"net/url"
 	"os"
 )
-import "github.com/bdragon300/tusgo"
+import "github.com/alexozer/tusgo"
 
 func main() {
 	baseURL, _ := url.Parse("http://example.com/files")
@@ -97,7 +97,7 @@ import (
 	"os"
 	"time"
 )
-import "github.com/bdragon300/tusgo"
+import "github.com/alexozer/tusgo"
 
 func UploadWithRetry(dst *tusgo.UploadStream, src *os.File) error {
 	// Set stream and file pointer to be equal to the remote pointer

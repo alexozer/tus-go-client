@@ -1,4 +1,4 @@
-package tusgo_test
+package tusgo
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/bdragon300/tusgo"
+	"github.com/alexozer/tusgo"
 )
 
 func Example_minimal() {

@@ -1,4 +1,4 @@
-module github.com/alexozer/tus-go-client
+module github.com/alexozer/tusgo
 
 go 1.24.4
 
@@ -8,8 +8,6 @@ require (
 	github.com/onsi/gomega v1.35.1
 	github.com/vitorsalgado/mocha/v3 v3.0.2
 )
-
-require github.com/bdragon300/tusgo v0.1.2
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

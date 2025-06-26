@@ -1,4 +1,4 @@
-package tusgo_test
+package tusgo
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bdragon300/tusgo"
+	"github.com/alexozer/tusgo"
 )
 
 func UploadWithRetry(dst *tusgo.UploadStream, src *os.File) error {
