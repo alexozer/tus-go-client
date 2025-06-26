@@ -1,8 +1,6 @@
-module github.com/bdragon300/tusgo
+module github.com/alexozer/tus-go-client
 
-go 1.22.0
-
-toolchain go1.23.2
+go 1.24.4
 
 // test requirements
 require (
@@ -10,6 +8,8 @@ require (
 	github.com/onsi/gomega v1.35.1
 	github.com/vitorsalgado/mocha/v3 v3.0.2
 )
+
+require github.com/bdragon300/tusgo v0.1.2
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
